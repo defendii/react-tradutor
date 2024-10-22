@@ -1,6 +1,7 @@
-
+import { useState } from 'react';
 
 function App() {
+
   const languages = [
     { code: "en-us", name: "Inglês" },
     { code: "es", name: "Espanhol" },
@@ -9,6 +10,19 @@ function App() {
     { code: "it", name: "Italiano" },
     { code: "pt-br", name: "Português" },
   ];
+
+  const [linguaOrigem, setLinguaOrigem] = useState("en-us")
+  const handleLinguaOrigem = (e) => setLinguaOrigem(e.target.value)
+
+
+  const [linguaDestino, setLinguaDestino] = useState("pt-br")
+  const handleLinguaDestino = (e) => setLinguaDestino(e.target.value)
+
+
+  function trocaLingua() {
+    setLinguaDestino(linguaOrigem)
+    setLinguaOrigem(linguaDestino)
+  }
 
   let isLoading = false
   let error = ""
@@ -26,13 +40,15 @@ function App() {
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
             <select
               className="text-sm text-textColor bg-transparent border-none focus:outline-none cursor-pointer"
-              value="en-us"
+              value={linguaOrigem}
+              onChange={handleLinguaOrigem}
             >
-              <option value="pt-br">Português</option>
-              <option value="en-us">Inglês</option>
+              {
+                languages.map( elemento => (<option value={elemento.code}>{elemento.name}</option>) )
+              }
             </select>
 
-            <button className="p-2 rounded-full hover:bg-gray-100 outline-none">
+            <button className="p-2 rounded-full hover:bg-gray-100 outline-none" onClick={trocaLingua}>
               <svg
                 className="w-5 h-5 text-headerColor"
                 fill="none"
@@ -51,10 +67,12 @@ function App() {
 
             <select
               className="text-sm text-textColor bg-transparent border-none focus:outline-none cursor-pointer"
-              value="pt-br"
+              value={linguaDestino}
+              onChange={handleLinguaDestino}
             >
-              <option value="pt-br">Português</option>
-              <option value="en-us">Inglês</option>
+              {
+                languages.map( elemento => (<option value={elemento.code}>{elemento.name}</option>) )
+              }
             </select>
           </div>
 
