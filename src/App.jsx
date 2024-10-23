@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 function App() {
 
@@ -11,21 +11,56 @@ function App() {
     { code: "pt-br", name: "Português" },
   ];
 
-  const [linguaOrigem, setLinguaOrigem] = useState("en-us")
+  const [linguaOrigem, setLinguaOrigem] = useState("pt-br")
   const handleLinguaOrigem = (e) => setLinguaOrigem(e.target.value)
 
 
-  const [linguaDestino, setLinguaDestino] = useState("pt-br")
+  const [linguaDestino, setLinguaDestino] = useState("en-us")
   const handleLinguaDestino = (e) => setLinguaDestino(e.target.value)
 
+  const [texto, setTexto] = useState('');
+  const [traducao, setTraducao] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
 
   function trocaLingua() {
-    setLinguaDestino(linguaOrigem)
+    let tempLinguaOrigem = linguaOrigem
     setLinguaOrigem(linguaDestino)
+    setLinguaDestino(tempLinguaOrigem)
+    setTexto(traducao)
   }
 
-  let isLoading = false
-  let error = ""
+  async function traduzir() {
+    if (texto.trim() === '') {
+      setTraducao('')
+      return
+    }
+
+    setIsLoading(true)
+    setError('')
+
+    try{
+      const response = await fetch(
+        `https://api.mymemory.translated.net/get?q=${encodeURIComponent(texto)}&langpair=${linguaOrigem}|${linguaDestino}`
+      )
+
+      const data = await response.json()
+      const translatedText = data.responseData.translatedText
+      setTraducao(translatedText)
+
+    } catch (error) {
+      setError('Erro ao obter tradução: ', error)
+
+    } finally {
+      setIsLoading(false)
+    } 
+
+  }
+
+  useEffect(() => {
+    traduzir()
+  }, [texto, linguaOrigem, linguaDestino])
+
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -40,8 +75,8 @@ function App() {
           <div className="flex items-center justify-between p-4 border-b border-gray-200">
             <select
               className="text-sm text-textColor bg-transparent border-none focus:outline-none cursor-pointer"
-              value={linguaOrigem}
-              onChange={handleLinguaOrigem}
+              value = {linguaOrigem}
+              onChange = {handleLinguaOrigem}
             >
               {
                 languages.map( elemento => (<option value={elemento.code}>{elemento.name}</option>) )
@@ -67,8 +102,8 @@ function App() {
 
             <select
               className="text-sm text-textColor bg-transparent border-none focus:outline-none cursor-pointer"
-              value={linguaDestino}
-              onChange={handleLinguaDestino}
+              value = {linguaDestino}
+              onChange = {handleLinguaDestino}
             >
               {
                 languages.map( elemento => (<option value={elemento.code}>{elemento.name}</option>) )
@@ -80,7 +115,9 @@ function App() {
             <div className="p-4">
               <textarea
                 className="w-full h-40 text-lg text-textColor bg-transparent resize-none border-none outline-none"
-                placeholder="Digite seu texto..."                
+                placeholder="Digite seu texto..."   
+                value = {texto}
+                onChange={(e) => setTexto(e.target.value)}       
               ></textarea>
             </div>
 
@@ -90,7 +127,7 @@ function App() {
                   <div className="animate-spin rounded-full h-8 w-8 border-blue-500 border-t-2"></div>
                 </div>
               ) : (
-                <p className="text-lg text-textColor">Colocar aqui o texto traduzido</p>
+                <p className="text-lg text-textColor">{traducao}</p>
               )}
             </div>
           </div>
@@ -109,7 +146,9 @@ function App() {
         </div>
       </footer>
     </div>
-  );
+    
+  )
+
 }
 
-export default App;
+export default App
